@@ -53,6 +53,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -863,6 +864,7 @@ fun PantallaInventario(vm: InventarioViewModel, seccion: Seccion, onBack: () -> 
 
             if (mostrarDialogoFormulario) {
                 DialogoFormularioProducto(
+                    vm = vm,
                     productoEdicion = productoAConfigurarInfo,
                     idInicial = idParaNuevoProducto,
                     seccionFija = seccion.nombre,
@@ -1157,6 +1159,7 @@ fun CardProducto(
 
 @Composable
 fun DialogoFormularioProducto(
+    vm: InventarioViewModel = viewModel(),
     productoEdicion: Producto?,
     idInicial: String,
     seccionFija: String,
@@ -1172,6 +1175,20 @@ fun DialogoFormularioProducto(
     var menuUnidadExpandido by remember { mutableStateOf(false) }
     val isPieza = unidad.lowercase() == "pieza";
     val isCaja = unidad.lowercase() == "caja"
+    
+    var buscandoNombre by remember { mutableStateOf(false) }
+
+    // EFECTO MÁGICO: Si es un código nuevo, buscar nombre en internet
+    LaunchedEffect(id) {
+        if (id.length >= 8 && nombre.isBlank() && productoEdicion == null) {
+            buscandoNombre = true
+            val nombreEncontrado = vm.buscarNombreEnInternet(id)
+            if (nombreEncontrado != null) {
+                nombre = nombreEncontrado
+            }
+            buscandoNombre = false
+        }
+    }
 
     AlertDialog(
         shape = RoundedCornerShape(24.dp),
@@ -1189,16 +1206,25 @@ fun DialogoFormularioProducto(
                     onValueChange = { id = it },
                     label = { Text("Código") },
                     singleLine = true,
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = nombre,
-                    onValueChange = { nombre = it },
-                    label = { Text("Nombre") },
-                    singleLine = true,
-                    shape = RoundedCornerShape(12.dp)
-                )
+                
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    OutlinedTextField(
+                        value = nombre,
+                        onValueChange = { nombre = it },
+                        label = { Text(if (buscandoNombre) "Buscando nombre..." else "Nombre") },
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        trailingIcon = {
+                            if (buscandoNombre) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                        }
+                    )
+                }
+                
                 Box(modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp)) {
@@ -1233,7 +1259,8 @@ fun DialogoFormularioProducto(
                     label = { Text("Stock Necesario") },
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
-                    keyboardOptions = KeyboardOptions(keyboardType = if (isPieza) KeyboardType.Number else if (isCaja) KeyboardType.Text else KeyboardType.Decimal)
+                    keyboardOptions = KeyboardOptions(keyboardType = if (isPieza) KeyboardType.Number else if (isCaja) KeyboardType.Text else KeyboardType.Decimal),
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         },

@@ -3,8 +3,15 @@ package com.example.pre_inventariossa
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.net.HttpURLConnection
+import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -38,7 +45,7 @@ class InventarioViewModel(application: Application) : AndroidViewModel(applicati
     fun guardarProductos(productos: List<Producto>) =
         viewModelScope.launch { dao.insertarProductos(productos) }
 
-    // --- NUEVO: FUNCIÓN MÁGICA PARA IMPORTAR ---
+    // --- FUNCIÓN PARA IMPORTAR ---
     fun importarYCrearSecciones(productos: List<Producto>) = viewModelScope.launch {
         if (productos.isEmpty()) return@launch
 
@@ -84,4 +91,73 @@ class InventarioViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun limpiarHistorial() = viewModelScope.launch { dao.borrarHistorial() }
+
+    // --- BUSCAR NOMBRE EN INTERNET (API OPEN FOOD FACTS - LIMPIEZA MÉXICO) ---
+    suspend fun buscarNombreEnInternet(codigo: String): String? {
+        // Ignorar códigos locales (menores a 7 dígitos)
+        if (codigo.length < 7) return null
+
+        return withContext(Dispatchers.IO) {
+            try {
+                val url = URL("https://world.openfoodfacts.org/api/v0/product/$codigo.json")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "GET"
+                connection.connect()
+
+                if (connection.responseCode == 200) {
+                    val reader = BufferedReader(InputStreamReader(connection.inputStream))
+                    val response = StringBuilder()
+                    var line: String?
+                    while (reader.readLine().also { line = it } != null) {
+                        response.append(line)
+                    }
+                    val json = JSONObject(response.toString())
+                    if (json.optInt("status") == 1) {
+                        val product = json.getJSONObject("product")
+                        
+                        // 1. Obtener nombre base (prioridad español)
+                        var nombreFinal = product.optString("product_name_es").ifBlank { 
+                            product.optString("product_name") 
+                        }.trim()
+                        
+                        // 2. Obtener marca y limpiar (quitar "The Coca-Cola Company", etc)
+                        var marca = product.optString("brands").split(",")[0].trim()
+                        val empresaSufijos = listOf("company", "corporation", "the", "mexico", "s.a.", "de c.v.", "inc.")
+                        
+                        // Limpiar marca de nombres de corporativo largos
+                        var marcaLimpia = marca
+                        empresaSufijos.forEach { sufijo ->
+                            if (marcaLimpia.lowercase().contains(sufijo)) {
+                                // Si la marca es "The Coca-Cola Company", intentar dejar solo "Coca-Cola"
+                                marcaLimpia = marcaLimpia.replace(Regex("(?i)\\b$sufijo\\b"), "").trim()
+                            }
+                        }
+
+                        // 3. Obtener cantidad (ej: 1.5 L, 600 ml)
+                        val cantidad = product.optString("quantity").trim()
+
+                        // 4. Construir el nombre final sin repetir marca
+                        var resultado = ""
+                        
+                        // Si el nombre ya incluye la marca (ej: "Sprite Refresco..."), no la pegamos al inicio
+                        if (marcaLimpia.isNotBlank() && !nombreFinal.contains(marcaLimpia, ignoreCase = true)) {
+                            resultado = "$marcaLimpia "
+                        }
+                        
+                        resultado += nombreFinal
+                        
+                        if (cantidad.isNotBlank()) {
+                            resultado += " $cantidad"
+                        }
+                        
+                        // Limpiar espacios dobles que hayan quedado
+                        return@withContext resultado.replace(Regex("\\s+"), " ").trim().uppercase()
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            null
+        }
+    }
 }
