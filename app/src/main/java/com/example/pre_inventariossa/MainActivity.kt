@@ -93,6 +93,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.delay
 
@@ -1204,6 +1205,10 @@ fun DialogoFormularioProducto(
     }
 
     AlertDialog(
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = false // EVITA EL CIERRE ACCIDENTAL AL TOCAR FUERA
+        ),
         shape = RoundedCornerShape(24.dp),
         onDismissRequest = onDismiss,
         title = {
@@ -1355,6 +1360,10 @@ fun DialogoEditarStock(producto: Producto, onDismiss: () -> Unit, onSave: (Produ
     }
 
     AlertDialog(
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = false // EVITA EL CIERRE ACCIDENTAL AL TOCAR FUERA
+        ),
         shape = RoundedCornerShape(24.dp),
         onDismissRequest = onDismiss,
         title = { Text(producto.nombre.uppercase(), fontWeight = FontWeight.Black) },
