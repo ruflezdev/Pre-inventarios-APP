@@ -1,6 +1,11 @@
 package com.example.pre_inventariossa
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -36,7 +41,7 @@ interface ProductoDao {
     @Delete
     suspend fun eliminarProducto(producto: Producto)
 
-    @Query("UPDATE productos SET enTienda = 0.0, pedidoFinal = 0.0, verificado = 0 WHERE seccion = :seccionNombre")
+    @Query("UPDATE productos SET enTienda = 0.0, pedidoFinal = 0.0, verificado = 0, nota = '' WHERE seccion = :seccionNombre")
     suspend fun reiniciarInventario(seccionNombre: String)
 
     @Insert

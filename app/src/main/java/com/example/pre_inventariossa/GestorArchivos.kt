@@ -30,9 +30,12 @@ fun importarDesdeCSV(context: Context, uri: Uri): List<Producto> {
                                 seccion = datos[2].trim(),
                                 unidad = datos[3].trim(),
                                 stockNecesario = datos[4].trim().toDoubleOrNull() ?: 0.0,
-                                enTienda = if (datos.size > 5) datos[5].trim().toDoubleOrNull() ?: 0.0 else 0.0,
-                                pedidoFinal = if (datos.size > 6) datos[6].trim().toDoubleOrNull() ?: 0.0 else 0.0,
-                                verificado = if (datos.size > 7) datos[7].trim().toBooleanStrictOrNull() ?: false else false,
+                                enTienda = if (datos.size > 5) datos[5].trim().toDoubleOrNull()
+                                    ?: 0.0 else 0.0,
+                                pedidoFinal = if (datos.size > 6) datos[6].trim().toDoubleOrNull()
+                                    ?: 0.0 else 0.0,
+                                verificado = if (datos.size > 7) datos[7].trim()
+                                    .toBooleanStrictOrNull() ?: false else false,
                                 nota = if (datos.size > 8) datos[8].trim() else ""
                             )
                         )
@@ -57,7 +60,8 @@ fun exportarACsv(context: Context, productos: List<Producto>) {
     val nombreArchivo = "Inventario_$fecha.csv"
 
     // Nombres de las columnas en el Excel
-    val cabecera = "ID_Codigo,Nombre,Seccion,Unidad,Stock_Necesario,En_Tienda,Pedido_Final,Verificado,Nota\n"
+    val cabecera =
+        "ID_Codigo,Nombre,Seccion,Unidad,Stock_Necesario,En_Tienda,Pedido_Final,Verificado,Nota\n"
 
     val contenido = productos.joinToString("\n") { p ->
         // Quitamos las comas de los textos para no romper el Excel
@@ -70,7 +74,8 @@ fun exportarACsv(context: Context, productos: List<Producto>) {
         val cacheFile = File(context.cacheDir, nombreArchivo)
         FileOutputStream(cacheFile).use { it.write((cabecera + contenido).toByteArray()) }
 
-        val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", cacheFile)
+        val uri =
+            FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", cacheFile)
 
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "text/csv"

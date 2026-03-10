@@ -6,7 +6,8 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "secciones")
 data class Seccion(
     @PrimaryKey val nombre: String,
-    val colorHex: Long
+    val colorHex: Long,
+    val icono: String = "📁" // Emoji o ID de icono por defecto
 )
 
 @Entity(tableName = "productos")

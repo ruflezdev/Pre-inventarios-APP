@@ -79,6 +79,5 @@ dependencies {
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
-    // Este es el procesador de anotaciones para Kotlin 2.0+
     ksp("androidx.room:room-compiler:$roomVersion")
 }
