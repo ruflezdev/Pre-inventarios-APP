@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -237,9 +236,11 @@ fun PantallaSecciones(
             ) { Icon(Icons.Default.Add, "Nueva") }
         }
     ) { padding ->
-        LazyColumn(modifier = Modifier
-            .padding(padding)
-            .padding(horizontal = 16.dp)) {
+        LazyColumn(
+            modifier = Modifier
+                .padding(padding)
+                .padding(horizontal = 16.dp)
+        ) {
             item { Spacer(modifier = Modifier.height(16.dp)) }
             items(secciones, key = { it.nombre }) { seccion ->
                 Card(
@@ -251,16 +252,18 @@ fun PantallaSecciones(
                         .clickable { onSeccionClick(seccion) },
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                 ) {
-                    Box(modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.surface,
-                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(
+                                        MaterialTheme.colorScheme.surface,
+                                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                                    )
                                 )
                             )
-                        )) {
+                    ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
@@ -272,7 +275,7 @@ fun PantallaSecciones(
                                     .height(100.dp)
                                     .background(Color(seccion.colorHex))
                             )
-                            
+
                             Row(
                                 modifier = Modifier.padding(20.dp),
                                 verticalAlignment = Alignment.CenterVertically
@@ -346,9 +349,11 @@ fun PantallaAjustes(
             )
         }
     ) { padding ->
-        Column(modifier = Modifier
-            .padding(padding)
-            .padding(16.dp)) {
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .padding(16.dp)
+        ) {
             Card(
                 shape = RoundedCornerShape(16.dp),
                 elevation = CardDefaults.cardElevation(2.dp),
@@ -511,7 +516,7 @@ fun DialogoSeccion(seccionEdicion: Seccion?, onDismiss: () -> Unit, onConfirm: (
         0xFF42A5F5, 0xFF26C6DA, 0xFF26A69A, 0xFF66BB6A, 0xFF9CCC65,
         0xFFFFCA28, 0xFFFFA726, 0xFFFF7043, 0xFF8D6E63, 0xFF78909C
     )
-    
+
     var colorSeleccionado by remember { mutableStateOf(seccionEdicion?.colorHex ?: colores[0]) }
 
     AlertDialog(
@@ -542,11 +547,13 @@ fun DialogoSeccion(seccionEdicion: Seccion?, onDismiss: () -> Unit, onConfirm: (
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 )
-                
+
                 Spacer(modifier = Modifier.height(20.dp))
                 Text("Color del listón:", fontSize = 12.sp, color = Color.Gray)
                 LazyRow(
-                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(colores) { color ->
@@ -616,9 +623,11 @@ fun PantallaHistorial(vm: InventarioViewModel, onBack: () -> Unit) {
                 contentAlignment = Alignment.Center
             ) { Text("No hay pedidos guardados", color = Color.Gray, fontSize = 18.sp) }
         } else {
-            LazyColumn(modifier = Modifier
-                .padding(padding)
-                .padding(16.dp)) {
+            LazyColumn(
+                modifier = Modifier
+                    .padding(padding)
+                    .padding(16.dp)
+            ) {
                 items(historiales) { historial ->
                     Card(
                         shape = RoundedCornerShape(16.dp),
@@ -749,9 +758,11 @@ fun PantallaInventario(vm: InventarioViewModel, seccion: Seccion, onBack: () -> 
             )
         }
     ) { padding ->
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .padding(padding)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 OutlinedTextField(
                     value = busqueda,
@@ -794,9 +805,11 @@ fun PantallaInventario(vm: InventarioViewModel, seccion: Seccion, onBack: () -> 
             }
 
             if (mostrarCamaraBusqueda) {
-                Box(modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black)) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black)
+                ) {
                     CamaraPreview(onCodigoDetectado = { codigo ->
                         reproducirBeep();
                         val encontrado =
@@ -1175,7 +1188,7 @@ fun DialogoFormularioProducto(
     var menuUnidadExpandido by remember { mutableStateOf(false) }
     val isPieza = unidad.lowercase() == "pieza";
     val isCaja = unidad.lowercase() == "caja"
-    
+
     var buscandoNombre by remember { mutableStateOf(false) }
 
     // EFECTO MÁGICO: Si es un código nuevo, buscar nombre en internet
@@ -1210,7 +1223,7 @@ fun DialogoFormularioProducto(
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                
+
                 Box(modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
                         value = nombre,
@@ -1220,14 +1233,20 @@ fun DialogoFormularioProducto(
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth(),
                         trailingIcon = {
-                            if (buscandoNombre) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                            if (buscandoNombre) CircularProgressIndicator(
+                                modifier = Modifier.size(
+                                    20.dp
+                                ), strokeWidth = 2.dp
+                            )
                         }
                     )
                 }
-                
-                Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp)) {
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                ) {
                     OutlinedButton(
                         onClick = { menuUnidadExpandido = true },
                         modifier = Modifier.fillMaxWidth(),

@@ -30,7 +30,12 @@ class InventarioViewModel(application: Application) : AndroidViewModel(applicati
 
     fun guardarSeccion(seccion: Seccion) = viewModelScope.launch { dao.insertarSeccion(seccion) }
 
-    fun modificarSeccion(viejaSeccion: Seccion, nuevoNombre: String, nuevoColor: Long, nuevoIcono: String) =
+    fun modificarSeccion(
+        viejaSeccion: Seccion,
+        nuevoNombre: String,
+        nuevoColor: Long,
+        nuevoIcono: String
+    ) =
         viewModelScope.launch {
             dao.insertarSeccion(Seccion(nuevoNombre, nuevoColor, nuevoIcono))
             dao.actualizarNombreSeccionEnProductos(viejaSeccion.nombre, nuevoNombre)
@@ -114,22 +119,31 @@ class InventarioViewModel(application: Application) : AndroidViewModel(applicati
                     val json = JSONObject(response.toString())
                     if (json.optInt("status") == 1) {
                         val product = json.getJSONObject("product")
-                        
+
                         // 1. Obtener nombre base (prioridad español)
-                        var nombreFinal = product.optString("product_name_es").ifBlank { 
-                            product.optString("product_name") 
+                        var nombreFinal = product.optString("product_name_es").ifBlank {
+                            product.optString("product_name")
                         }.trim()
-                        
+
                         // 2. Obtener marca y limpiar (quitar "The Coca-Cola Company", etc)
                         var marca = product.optString("brands").split(",")[0].trim()
-                        val empresaSufijos = listOf("company", "corporation", "the", "mexico", "s.a.", "de c.v.", "inc.")
-                        
+                        val empresaSufijos = listOf(
+                            "company",
+                            "corporation",
+                            "the",
+                            "mexico",
+                            "s.a.",
+                            "de c.v.",
+                            "inc."
+                        )
+
                         // Limpiar marca de nombres de corporativo largos
                         var marcaLimpia = marca
                         empresaSufijos.forEach { sufijo ->
                             if (marcaLimpia.lowercase().contains(sufijo)) {
                                 // Si la marca es "The Coca-Cola Company", intentar dejar solo "Coca-Cola"
-                                marcaLimpia = marcaLimpia.replace(Regex("(?i)\\b$sufijo\\b"), "").trim()
+                                marcaLimpia =
+                                    marcaLimpia.replace(Regex("(?i)\\b$sufijo\\b"), "").trim()
                             }
                         }
 
@@ -138,18 +152,22 @@ class InventarioViewModel(application: Application) : AndroidViewModel(applicati
 
                         // 4. Construir el nombre final sin repetir marca
                         var resultado = ""
-                        
+
                         // Si el nombre ya incluye la marca (ej: "Sprite Refresco..."), no la pegamos al inicio
-                        if (marcaLimpia.isNotBlank() && !nombreFinal.contains(marcaLimpia, ignoreCase = true)) {
+                        if (marcaLimpia.isNotBlank() && !nombreFinal.contains(
+                                marcaLimpia,
+                                ignoreCase = true
+                            )
+                        ) {
                             resultado = "$marcaLimpia "
                         }
-                        
+
                         resultado += nombreFinal
-                        
+
                         if (cantidad.isNotBlank()) {
                             resultado += " $cantidad"
                         }
-                        
+
                         // Limpiar espacios dobles que hayan quedado
                         return@withContext resultado.replace(Regex("\\s+"), " ").trim().uppercase()
                     }
